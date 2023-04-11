@@ -1,0 +1,49 @@
+{
+  "name": "graphql",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "roxyzc",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon ./src/index.ts",
+    "start": "node ./dist/index.js",
+    "build": "rm -rf ./dist && tsc", 
+    "format": "prettier -w .",
+    "prepare": "husky install",
+    "check-types": "tsc --pretty --noEmit",
+    "check-format": "prettier --check .",
+    "check-lint": "eslint . --ext ts --ext js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn pretty-quick --staged ng lint ng tes"
+    }
+  },
+  "dependencies": {
+    "@apollo/server": "^4.6.0",
+    "@graphql-tools/graphql-file-loader": "^7.5.16",
+    "@graphql-tools/load": "^7.8.13",
+    "@prisma/client": "^4.12.0",
+    "@types/node": "^18.15.11",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "graphql": "^16.6.0",
+    "prisma": "^4.12.0",
+    "typescript": "*"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard-with-typescript": "^34.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-promise": "^6.0.0",
+    "husky": "^8.0.3",
+    "prettier": "^2.8.7",
+    "pretty-quick": "^3.1.3"
+  }
+}
