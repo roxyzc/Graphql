@@ -3,4 +3,4 @@
 
 TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
 
-echo TIMESTAMP # print another timestamp
+echo `${TIMESTAMP}` # print another timestamp
