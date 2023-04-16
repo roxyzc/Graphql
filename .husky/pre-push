@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
+
+echo TIMESTAMP # print another timestamp

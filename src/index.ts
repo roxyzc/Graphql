@@ -9,10 +9,7 @@ import { json } from "body-parser";
 import resolvers from "./resolvers";
 import { loadSchema } from "@graphql-tools/load";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
-
-interface MyContext {
-  token?: string;
-}
+import { type MyContext } from "./types";
 
 const main = async () => {
   const app: Application = express();

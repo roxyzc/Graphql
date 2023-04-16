@@ -1,0 +1,30 @@
+scalar Date
+
+enum STATUS {
+  ERROR
+  OK
+}
+
+type User {
+  userId: String!
+  username: String!
+  email: String!
+  password: String
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type Error {
+  status: STATUS
+  message: String!
+}
+
+union Result = User | Error
+
+type Query {
+  Users: [User]
+}
+
+type Mutation {
+  register(username: String!, email: String!, password: String!): Result
+}
