@@ -2,7 +2,6 @@ scalar Date
 
 enum STATUS {
   ERROR
-  OK
 }
 
 type User {
@@ -14,15 +13,20 @@ type User {
   updatedAt: Date!
 }
 
+type Users {
+  data: [User]!
+}
+
 type Error {
-  status: STATUS
+  status: STATUS!
   message: String!
 }
 
-union Result = User | Error
+union Result = User | Error | Users
 
 type Query {
-  Users: [User]
+  dataUsers: Result
+  dataUser(id: String): Result
 }
 
 type Mutation {

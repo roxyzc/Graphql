@@ -25,6 +25,7 @@
     "@graphql-tools/load": "^7.8.13",
     "@prisma/client": "^4.12.0",
     "@types/node": "^18.15.11",
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "graphql": "^16.6.0",
@@ -33,7 +34,9 @@
     "typescript": "*"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.13",
+    "@types/jsonwebtoken": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.58.0",
     "eslint": "^8.0.1",

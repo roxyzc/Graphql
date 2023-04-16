@@ -6,6 +6,11 @@ export interface User {
   password: string;
 }
 
-export interface MyContext {
-  token?: string;
+export interface Context {
+  payload?: Record<string, any, null>;
+}
+
+export interface Payload {
+  id: string;
+  role: string;
 }

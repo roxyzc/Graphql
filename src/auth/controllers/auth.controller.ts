@@ -28,4 +28,5 @@ const register = async (values: User) => {
 
   throw new Error("User already exists");
 };
+
 export { register };
