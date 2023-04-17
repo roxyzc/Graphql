@@ -6,6 +6,11 @@ export interface User {
   password: string;
 }
 
+export interface Auth {
+  usernameOrEmail: string;
+  password: string;
+}
+
 export interface Context {
   payload?: Record<string, any, null>;
 }

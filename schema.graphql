@@ -2,6 +2,7 @@ scalar Date
 
 enum STATUS {
   ERROR
+  OK
 }
 
 type User {
@@ -17,12 +18,17 @@ type Users {
   data: [User]!
 }
 
-type Error {
+type Status {
   status: STATUS!
   message: String!
 }
 
-union Result = User | Error | Users
+type Token {
+  accessToken: String
+  refreshToken: String
+}
+
+union Result = User | Status | Users | Token
 
 type Query {
   dataUsers: Result
@@ -31,4 +37,5 @@ type Query {
 
 type Mutation {
   register(username: String!, email: String!, password: String!): Result
+  login(usernameOrEmail: String!, password: String!): Result
 }

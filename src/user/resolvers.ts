@@ -6,7 +6,7 @@ const resolvers = {
     dataUsers: async (_parents: unknown, _args: unknown, context: { payload: Payload }) => {
       if (context.payload === undefined) {
         return {
-          __typename: "Error",
+          __typename: "Status",
           status: "ERROR",
           message: "Unauthorized",
         };
@@ -21,7 +21,7 @@ const resolvers = {
     dataUser: async (_parents: unknown, { id }: { id: string }, context: { payload: Payload }) => {
       if (context.payload === undefined) {
         return {
-          __typename: "Error",
+          __typename: "Status",
           status: "ERROR",
           message: "Unauthorized",
         };
