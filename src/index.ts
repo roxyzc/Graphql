@@ -10,7 +10,7 @@ import resolvers from "./resolvers";
 import { loadSchema } from "@graphql-tools/load";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
 import { type Context } from "./types";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 const main = async () => {
@@ -31,17 +31,8 @@ const main = async () => {
     expressMiddleware(server, {
       context: async ({ req }): Promise<any> => {
         const payload = {};
-        const token = req.headers.authorization ?? null;
-        try {
-          if (token !== null) {
-            jwt.verify(token, process.env.ACCESSTOKENSECRET as string, (err, response) => {
-              if (err === null) Object.assign(payload, response);
-              return payload;
-            });
-          }
-        } catch (error) {
-          return payload;
-        }
+        Object.assign(payload, { token: req.headers.authorization ?? null });
+        return payload;
       },
     })
   );

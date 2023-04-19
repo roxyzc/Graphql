@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { type Auth, type User } from "../../types";
 import { compare } from "../../utils/hash.util";
-import { generateToken } from "../../utils/token.util";
+import { generateToken, verifyToken } from "../../utils/token.util";
 
 const prisma = new PrismaClient();
 
@@ -70,4 +70,34 @@ const login = async (values: Auth): Promise<string | null> => {
   return accessToken;
 };
 
-export { register, login };
+const FrefreshToken = async (token: string) => {
+  const findAccessToken = await prisma.token.findFirst({
+    where: { accessToken: token },
+    select: { tokenId: true, accessToken: true, refreshToken: true, user: { select: { userId: true, role: true } } },
+  });
+  if (findAccessToken === null) throw new Error("unauthorized");
+  const data = await verifyToken(findAccessToken.refreshToken, process.env.REFRESHTOKENSECRET as string);
+  if (data !== null) {
+    const { accessToken } = await generateToken({ id: data.id, role: data.role }, false);
+    await prisma.token.update({
+      where: {
+        tokenId: findAccessToken.tokenId,
+      },
+      data: { accessToken },
+    });
+    return await Promise.resolve({ accessToken, refreshToken: null });
+  }
+  const { accessToken, refreshToken } = await generateToken(
+    { id: findAccessToken.user?.userId as string, role: findAccessToken.user?.role as string },
+    true
+  );
+  await prisma.token.update({
+    where: {
+      tokenId: findAccessToken.tokenId,
+    },
+    data: { accessToken, refreshToken },
+  });
+  return await Promise.resolve({ accessToken, refreshToken });
+};
+
+export { register, login, FrefreshToken };

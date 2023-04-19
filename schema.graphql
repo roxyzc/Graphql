@@ -38,4 +38,5 @@ type Query {
 type Mutation {
   register(username: String!, email: String!, password: String!): Result
   login(usernameOrEmail: String!, password: String!): Result
+  refreshToken(token: String): Result
 }
