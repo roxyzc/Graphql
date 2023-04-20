@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { type Payload } from "../types";
+import { type Payload } from "@/types";
 import "dotenv/config";
 
 // eslint-disable-next-line @typescript-eslint/ban-types

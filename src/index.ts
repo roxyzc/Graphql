@@ -10,7 +10,6 @@ import resolvers from "./resolvers";
 import { loadSchema } from "@graphql-tools/load";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
 import { type Context } from "./types";
-// import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 const main = async () => {

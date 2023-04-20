@@ -1,4 +1,4 @@
-import { verifyToken } from "../utils/token.util";
+import { verifyToken } from "@/utils/token.util";
 import { getUser, getUsers } from "./controllers/get.controller";
 
 const resolvers = {

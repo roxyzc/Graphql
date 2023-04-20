@@ -1,7 +1,7 @@
 import { login, register, FrefreshToken } from "./controllers/auth.controller";
-import { type User, type Auth } from "../types";
-import { hash } from "../utils/hash.util";
-import { verifyToken } from "../utils/token.util";
+import { type User, type Auth } from "@/types";
+import { hash } from "@/utils/hash.util";
+import { verifyToken } from "@/utils/token.util";
 
 const resolvers = {
   Mutation: {
