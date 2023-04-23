@@ -1,13 +1,20 @@
 import { login, register, FrefreshToken } from "./controllers/auth.controller";
-import { type User, type Auth } from "@/types";
+import { type User, type Auth, type MyContext } from "@/types";
 import { hash } from "@/utils/hash.util";
 import { verifyToken } from "@/utils/token.util";
 
 const resolvers = {
   Mutation: {
-    register: async (_: unknown, req: User) => {
+    register: async (_: unknown, req: User, context: MyContext) => {
       try {
-        const data = await register({ username: req.username, email: req.email, password: await hash(req.password) });
+        const data = await register(
+          {
+            username: req.username,
+            email: req.email,
+            password: await hash(req.password),
+          },
+          context
+        );
         return {
           __typename: "User",
           ...data,
@@ -20,9 +27,9 @@ const resolvers = {
         };
       }
     },
-    login: async (_: unknown, req: Auth) => {
+    login: async (_: unknown, req: Auth, context: MyContext) => {
       try {
-        const data = await login(req);
+        const data = await login(req, context);
         return {
           __typename: "Token",
           accessToken: data,
@@ -35,9 +42,10 @@ const resolvers = {
         };
       }
     },
-    refreshToken: async (_: unknown, req: { token: string }) => {
+    refreshToken: async (_: unknown, context: MyContext) => {
+      const token = context.token as string;
       try {
-        await verifyToken(req.token, process.env.ACCESSTOKENSECRET as string);
+        await verifyToken(token, process.env.ACCESSTOKENSECRET as string);
         return {
           __typename: "Status",
           status: "ERROR",
@@ -45,7 +53,7 @@ const resolvers = {
         };
       } catch (error) {
         try {
-          const { accessToken, refreshToken } = await FrefreshToken(req.token);
+          const { accessToken, refreshToken } = await FrefreshToken(token, context);
           return {
             __typename: "Token",
             accessToken,
