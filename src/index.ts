@@ -9,13 +9,15 @@ import { json } from "body-parser";
 import resolvers from "./resolvers";
 import { loadSchema } from "@graphql-tools/load";
 import { GraphQLFileLoader } from "@graphql-tools/graphql-file-loader";
-import { type Context } from "./types";
+import { type MyContext } from "./types";
+import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
 
+const p = new PrismaClient();
 const main = async () => {
   const app: Application = express();
   const httpServer = http.createServer(app);
-  const server = new ApolloServer<Context>({
+  const server = new ApolloServer<MyContext>({
     typeDefs: await loadSchema(join(__dirname, "../schema.graphql"), {
       loaders: [new GraphQLFileLoader()],
     }),
@@ -29,9 +31,9 @@ const main = async () => {
     json(),
     expressMiddleware(server, {
       context: async ({ req }): Promise<any> => {
-        const payload = {};
-        Object.assign(payload, { token: req.headers.authorization ?? null });
-        return payload;
+        const token = req.headers.authorization ?? null;
+        const prisma = p;
+        return { token, prisma };
       },
     })
   );
@@ -39,6 +41,13 @@ const main = async () => {
   console.log(`🚀 Server ready at http://localhost:8000/graphql`);
 };
 
-main().catch((err): void => {
-  console.error(err);
-});
+main()
+  // eslint-disable-next-line promise/always-return
+  .then(async () => {
+    await p.$disconnect();
+  })
+  .catch(async (error) => {
+    await p.$disconnect();
+    console.error(error);
+    process.exit(1);
+  });

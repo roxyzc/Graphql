@@ -1,14 +1,15 @@
 import { verifyToken } from "@/utils/token.util";
 import { getUser, getUsers } from "./controllers/get.controller";
+import { type MyContext } from "@/types";
 
 const resolvers = {
   Query: {
-    dataUsers: async (_parents: unknown, _args: unknown, context: { token: string }) => {
+    dataUsers: async (_parents: unknown, _args: unknown, context: MyContext) => {
+      const token = context.token as string;
       try {
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, promise/valid-params
         const [, data] = await Promise.all([
-          verifyToken(context.token, process.env.ACCESSTOKENSECRET as string),
-          getUsers(),
+          verifyToken(token, process.env.ACCESSTOKENSECRET as string),
+          getUsers(context),
         ]);
         return {
           __typename: "Users",
@@ -23,11 +24,12 @@ const resolvers = {
       }
     },
 
-    dataUser: async (_parents: unknown, { id }: { id: string }, context: { token: string }) => {
+    dataUser: async (_parents: unknown, { id }: { id: string }, context: MyContext) => {
+      const token = context.token as string;
       try {
         const [, data] = await Promise.all([
-          verifyToken(context.token, process.env.REFRESHTOKENSECRET as string),
-          getUser(id),
+          verifyToken(token, process.env.REFRESHTOKENSECRET as string),
+          getUser(id, context),
         ]);
 
         return {

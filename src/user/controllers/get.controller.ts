@@ -1,14 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { type MyContext } from "@/types";
 
-const prisma = new PrismaClient();
-
-const getUsers = async () => {
-  const data = await prisma.user.findMany();
+const getUsers = async (context: Required<Pick<MyContext, "prisma">>) => {
+  const data = await context.prisma.user.findMany();
   return data;
 };
 
-const getUser = async (userId: string) => {
-  const data = await prisma.user.findUnique({ where: { userId } });
+const getUser = async (userId: string, context: Required<Pick<MyContext, "prisma">>) => {
+  const data = await context.prisma.user.findUnique({ where: { userId } });
   return data;
 };
 

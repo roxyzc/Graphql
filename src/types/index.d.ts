@@ -11,8 +11,10 @@ export interface Auth {
   password: string;
 }
 
-export interface Context {
+export interface MyContext {
   payload?: Record<string, any, null>;
+  token?: string;
+  prisma: any;
 }
 
 export interface Payload {
