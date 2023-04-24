@@ -34,7 +34,6 @@ const sendEmail = async (content: { from: string; to: string; subject: string; h
     await transporter().sendMail(content);
     return await Promise.resolve(true);
   } catch (error: any) {
-    console.log(error.message);
     return await Promise.resolve(false);
   }
 };

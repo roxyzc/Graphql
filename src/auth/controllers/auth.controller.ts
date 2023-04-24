@@ -1,8 +1,9 @@
-import { type MyContext, type Auth, type User } from "@/types";
-import { compare } from "@/utils/hash.util";
+import { type MyContext, type Auth, type User, type STATUS, type Token } from "@/types";
+import { encode, compare, decode } from "@/utils/hash.util";
 import { generateToken, verifyToken } from "../../utils/token.util";
-import { generateNumber } from "@/utils/generateOtp.util";
+import { generateNumber } from "@/utils/generateNumbers.util";
 import { sendEmail, mailOptions } from "@/utils/sendEmail.util";
+import { type PrismaClient } from "@prisma/client";
 
 const register = async (values: User, context: Required<Pick<MyContext, "prisma">>) => {
   const findData = await context.prisma.user.findFirst({
@@ -12,67 +13,65 @@ const register = async (values: User, context: Required<Pick<MyContext, "prisma"
   });
 
   // eslint-disable-next-line @typescript-eslint/return-await
-  return context.prisma.$transaction(async (tx: any) => {
+  return context.prisma.$transaction(async (tx: PrismaClient) => {
     try {
       if (findData === null) {
-        const data = await tx.prisma.user.create({ data: values });
+        const data = await tx.user.create({ data: values });
         const otp = generateNumber(6);
         const content = await mailOptions("Verify your email", data.email, "OTP", `<h3>${otp}</h3>`);
 
-        const [,] = await Promise.all([
-          tx.prisma.otp.create({ data: { otp, userId: data.userId } }),
+        const [, valid] = await Promise.all([
+          tx.otp.create({ data: { otp: encode(otp), userId: data.userId } }),
           sendEmail(content),
-        ]).catch((err) => {
-          throw new Error(err);
-        });
+        ]);
+
+        if (!valid) throw new Error("Send Email failed");
+
         return data;
       }
       throw new Error("user already exists");
     } catch (error: any) {
-      await context.prisma.$transactionRollback(tx);
       throw new Error(error.message);
     }
   });
 };
 
+const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma">>) => {
+  const findOtp = await context.prisma.otp.findFirst({
+    where: {
+      otp: decode(otp),
+    },
+  });
+
+  return findOtp;
+};
+
 const login = async (values: Auth, context: Required<Pick<MyContext, "prisma">>): Promise<string | null> => {
   const findUser = await context.prisma.user.findFirst({
     where: {
-      OR: [
-        {
-          username: values.usernameOrEmail,
-        },
-        {
-          email: values.usernameOrEmail,
-        },
-      ],
+      OR: [{ username: values.usernameOrEmail }, { email: values.usernameOrEmail }],
     },
   });
 
-  if (findUser === null) {
-    await context.prisma.$disconnect();
-    throw new Error("user not found");
-  }
+  if (findUser === null) throw new Error("user not found");
+  if (findUser.status === ("PENDING" as unknown as STATUS)) throw new Error("user in pending status");
+  if (!(await compare(values.password, findUser.password))) throw new Error("Password not match");
 
-  if (!(await compare(values.password, findUser.password))) {
-    throw new Error("Password not match");
-  }
-
-  const token = await context.prisma.token.findUnique({ where: { userId: findUser.userId } });
-  if (token !== null) {
-    return token.accessToken;
-  }
-
-  const { accessToken, refreshToken } = await generateToken({ id: findUser.userId, role: findUser.role });
-  await context.prisma.token.create({
-    data: {
-      accessToken,
-      refreshToken,
-      userId: findUser.userId,
-    },
-  });
-
-  return accessToken;
+  const token = await context.prisma.token
+    .findUnique({ where: { userId: findUser.userId } })
+    .then(async (payload: Token) => {
+      if (payload !== null) return payload.accessToken;
+      const { accessToken, refreshToken } = await generateToken({ id: findUser.userId, role: findUser.role });
+      await context.prisma.token.create({
+        data: {
+          accessToken,
+          refreshToken,
+          userId: findUser.userId,
+        },
+      });
+      return accessToken;
+    });
+  return token;
 };
 
 const FrefreshToken = async (token: string, context: Required<Pick<MyContext, "prisma">>) => {
@@ -108,4 +107,4 @@ const FrefreshToken = async (token: string, context: Required<Pick<MyContext, "p
   return await Promise.resolve({ accessToken: data.accessToken, refreshToken: data.refreshToken });
 };
 
-export { register, login, FrefreshToken };
+export { register, login, FrefreshToken, verifyUser };

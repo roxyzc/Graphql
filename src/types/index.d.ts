@@ -1,9 +1,21 @@
 export {};
 
+export enum STATUS {
+  PENDING,
+  ACTIVE,
+}
+
 export interface User {
   username: string;
   email: string;
   password: string;
+}
+
+export interface Token {
+  tokenId: string;
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
 }
 
 export interface Auth {
