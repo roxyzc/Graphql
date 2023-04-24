@@ -5,7 +5,7 @@ import onExit from "async-exit-hook";
 
 describe("it-utils", () => {
   it("sendEmail", async () => {
-    const content = await mailOptions("Verify your email", "roxyzc12@gmail.com", "OTP", `<h3>1231231</h3>`);
+    const content = await mailOptions("Verify your email", "your email", "OTP", `<h3>1231231</h3>`);
     const valid = await sendEmail(content);
     expect(valid).toBe(true);
   });
