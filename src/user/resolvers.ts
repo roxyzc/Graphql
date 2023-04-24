@@ -28,12 +28,12 @@ const resolvers = {
       const token = context.token as string;
       try {
         const [, data] = await Promise.all([
-          verifyToken(token, process.env.REFRESHTOKENSECRET as string),
+          verifyToken(token, process.env.ACCESSTOKENSECRET as string),
           getUser(id, context),
         ]);
 
         return {
-          __typename: "Users",
+          __typename: "User",
           ...data,
         };
       } catch (error: any) {

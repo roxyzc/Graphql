@@ -5,13 +5,19 @@ enum STATUS {
   OK
 }
 
+enum ROLE {
+  USER
+  ADMIN
+}
+
 type User {
   userId: String!
   username: String!
   email: String!
   password: String
-  createdAt: Date!
-  updatedAt: Date!
+  role: ROLE!
+  createdAt: Date
+  updatedAt: Date
 }
 
 type Users {

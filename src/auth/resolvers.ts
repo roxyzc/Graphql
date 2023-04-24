@@ -42,8 +42,7 @@ const resolvers = {
         };
       }
     },
-    refreshToken: async (_: unknown, context: MyContext) => {
-      const token = context.token as string;
+    refreshToken: async (_: unknown, { token }: { token: string }, context: MyContext) => {
       try {
         await verifyToken(token, process.env.ACCESSTOKENSECRET as string);
         return {
