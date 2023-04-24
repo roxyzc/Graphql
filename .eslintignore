@@ -3,3 +3,4 @@ node_modules
 dist
 __test__
 jest.config.js
+README.md
