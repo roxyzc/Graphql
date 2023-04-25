@@ -1,4 +1,4 @@
-import { login, register, FrefreshToken } from "./controllers/auth.controller";
+import { login, verifyUser, register, FrefreshToken } from "./controllers/auth.controller";
 import { type User, type Auth, type MyContext } from "@/types";
 import { hash } from "@/utils/hash.util";
 import { verifyToken } from "@/utils/token.util";
@@ -19,11 +19,27 @@ const resolvers = {
           __typename: "User",
           ...data,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as Error;
         return {
           __typename: "Status",
           status: "ERROR",
-          message: error.message ?? "Invalid registration",
+          message: err.message ?? "Invalid registration",
+        };
+      }
+    },
+    verifyUser: async (_: unknown, { otp }: { otp: string }, context: MyContext) => {
+      try {
+        const result = await verifyUser(otp, context);
+        return {
+          status: result.status,
+          message: result.message,
+        };
+      } catch (error: unknown) {
+        const err = error as Error;
+        return {
+          status: "ERROR",
+          message: err.message,
         };
       }
     },
@@ -34,11 +50,12 @@ const resolvers = {
           __typename: "Token",
           accessToken: data,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as Error;
         return {
           __typename: "Status",
           status: "ERROR",
-          message: error.message ?? "Invalid",
+          message: err.message ?? "Invalid",
         };
       }
     },
@@ -58,11 +75,12 @@ const resolvers = {
             accessToken,
             refreshToken,
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Error;
           return {
             __typename: "Status",
             status: "ERROR",
-            message: error.message ?? "Invalid",
+            message: err.message ?? "Invalid",
           };
         }
       }

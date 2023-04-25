@@ -43,6 +43,7 @@ type Query {
 
 type Mutation {
   register(username: String!, email: String!, password: String!): Result
+  verifyUser(otp: String!): Status
   login(usernameOrEmail: String!, password: String!): Result
   refreshToken(token: String): Result
 }

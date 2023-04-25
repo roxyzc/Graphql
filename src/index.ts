@@ -30,10 +30,10 @@ const main = async () => {
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }): Promise<any> => {
-        const token = req.headers.authorization ?? null;
+      context: async ({ req }): Promise<MyContext> => {
+        const token = req.headers.authorization ?? undefined;
         const prisma = p;
-        return { token, prisma };
+        return { prisma, token };
       },
     })
   );

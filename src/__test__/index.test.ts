@@ -2,10 +2,11 @@ import { mailOptions, sendEmail, closeTcpConnection } from "../utils/sendEmail.u
 import { generateNumber } from "../utils/generateNumbers.util";
 import { encode, decode } from "../utils/hash.util";
 import onExit from "async-exit-hook";
+import { addHours } from "../utils/generateDate.util";
 
 describe("it-utils", () => {
   it("sendEmail", async () => {
-    const content = await mailOptions("Verify your email", "your email", "OTP", `<h3>1231231</h3>`);
+    const content = await mailOptions("Verify your email", "aryagcc123@gmail.com", "OTP", `<h3>1231231</h3>`);
     const valid = await sendEmail(content);
     expect(valid).toBe(true);
   });
@@ -20,6 +21,12 @@ describe("it-utils", () => {
     const data = encode("8120312");
     const result = decode(data);
     expect(result).toEqual("8120312");
+  });
+
+  it("date", () => {
+    const date = new Date();
+    const expired = addHours(new Date(), 2);
+    expect(date.getTime() < expired).toBe(true);
   });
 
   onExit(() => {

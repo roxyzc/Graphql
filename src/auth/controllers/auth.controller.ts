@@ -1,7 +1,8 @@
-import { type MyContext, type Auth, type User, type STATUS, type Token } from "@/types";
-import { encode, compare, decode } from "@/utils/hash.util";
+import { type MyContext, type Auth, type User, type STATUS_USER, type Token, type Message, type STATUS } from "@/types";
+import { encode, compare } from "@/utils/hash.util";
 import { generateToken, verifyToken } from "../../utils/token.util";
 import { generateNumber } from "@/utils/generateNumbers.util";
+import { addHours } from "@/utils/generateDate.util";
 import { sendEmail, mailOptions } from "@/utils/sendEmail.util";
 import { type PrismaClient } from "@prisma/client";
 
@@ -21,7 +22,9 @@ const register = async (values: User, context: Required<Pick<MyContext, "prisma"
         const content = await mailOptions("Verify your email", data.email, "OTP", `<h3>${otp}</h3>`);
 
         const [, valid] = await Promise.all([
-          tx.otp.create({ data: { otp: encode(otp), userId: data.userId } }),
+          tx.otp.create({
+            data: { otp: encode(otp), userId: data.userId, expiredAt: new Date(addHours(new Date(), 2)) },
+          }),
           sendEmail(content),
         ]);
 
@@ -30,20 +33,51 @@ const register = async (values: User, context: Required<Pick<MyContext, "prisma"
         return data;
       }
       throw new Error("user already exists");
-    } catch (error: any) {
-      throw new Error(error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      throw new Error(err.message);
     }
   });
 };
 
-const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma">>) => {
-  const findOtp = await context.prisma.otp.findFirst({
-    where: {
-      otp: decode(otp),
-    },
-  });
+const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma">>): Promise<Message> => {
+  const [findOtp] = await Promise.all([
+    context.prisma.otp.findFirst({
+      where: {
+        otp: encode(otp),
+        expiredAt: {
+          gte: new Date(),
+        },
+      },
+    }),
+    context.prisma.otp.deleteMany({
+      where: {
+        OR: [
+          {
+            expiredAt: {
+              lte: new Date(),
+            },
+          },
+          {
+            otp: encode(otp),
+          },
+        ],
+      },
+    }),
+  ]);
 
-  return findOtp;
+  if (findOtp === null) throw new Error("Otp not found");
+  try {
+    await context.prisma.user.update({
+      where: { userId: findOtp.userId },
+      data: { status: "ACTIVE" as unknown as STATUS_USER },
+    });
+
+    return { message: "successfully activated the user", status: "OK" as unknown as STATUS };
+  } catch (error: unknown) {
+    const err = error as Error;
+    throw new Error(err.message ?? "Could not activate the user");
+  }
 };
 
 const login = async (values: Auth, context: Required<Pick<MyContext, "prisma">>): Promise<string | null> => {
@@ -54,7 +88,7 @@ const login = async (values: Auth, context: Required<Pick<MyContext, "prisma">>)
   });
 
   if (findUser === null) throw new Error("user not found");
-  if (findUser.status === ("PENDING" as unknown as STATUS)) throw new Error("user in pending status");
+  if (findUser.status === ("PENDING" as unknown as STATUS_USER)) throw new Error("user in pending status");
   if (!(await compare(values.password, findUser.password))) throw new Error("Password not match");
 
   const token = await context.prisma.token

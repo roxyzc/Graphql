@@ -15,11 +15,12 @@ const resolvers = {
           __typename: "Users",
           data,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as Error;
         return {
           __typename: "Status",
           status: "ERROR",
-          message: error.message ?? "Unauthorized",
+          message: err.message ?? "Unauthorized",
         };
       }
     },
@@ -36,11 +37,12 @@ const resolvers = {
           __typename: "User",
           ...data,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as Error;
         return {
           __typename: "Status",
           status: "ERROR",
-          message: error.message ?? "Unauthorized",
+          message: err.message ?? "Unauthorized",
         };
       }
     },

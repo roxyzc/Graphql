@@ -1,8 +1,13 @@
 export {};
 
-export enum STATUS {
+export enum STATUS_USER {
   PENDING,
   ACTIVE,
+}
+
+export enum STATUS {
+  ERROR,
+  OK,
 }
 
 export interface User {
@@ -27,6 +32,11 @@ export interface MyContext {
   payload?: Record<string, any, null>;
   token?: string;
   prisma: any;
+}
+
+export interface Message {
+  status: STATUS;
+  message: string;
 }
 
 export interface Payload {
