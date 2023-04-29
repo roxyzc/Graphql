@@ -46,4 +46,5 @@ type Mutation {
   verifyUser(otp: String!): Status
   login(usernameOrEmail: String!, password: String!): Result
   refreshToken(token: String): Result
+  takeTheOtpAgain(usernameOrEmail: String!): Status
 }

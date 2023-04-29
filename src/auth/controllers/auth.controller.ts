@@ -7,7 +7,7 @@ import { sendEmail, mailOptions } from "@/utils/sendEmail.util";
 import { type PrismaClient } from "@prisma/client";
 
 const register = async (values: User, context: Required<Pick<MyContext, "prisma">>) => {
-  const findData = await context.prisma.user.findFirst({
+  const findUser = await context.prisma.user.findFirst({
     where: {
       OR: [{ username: values.username }, { email: values.email }],
     },
@@ -16,8 +16,15 @@ const register = async (values: User, context: Required<Pick<MyContext, "prisma"
   // eslint-disable-next-line @typescript-eslint/return-await
   return context.prisma.$transaction(async (tx: PrismaClient) => {
     try {
-      if (findData === null) {
-        const data = await tx.user.create({ data: values });
+      if (findUser === null) {
+        const data = await tx.user.create({
+          data: {
+            username: values.username,
+            password: values.password,
+            email: values.email,
+            expiredAt: new Date(addHours(new Date(), 2)),
+          },
+        });
         const otp = generateNumber(6);
         const content = await mailOptions("Verify your email", data.email, "OTP", `<h3>${otp}</h3>`);
 
@@ -41,7 +48,7 @@ const register = async (values: User, context: Required<Pick<MyContext, "prisma"
 };
 
 const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma">>): Promise<Message> => {
-  const [findOtp] = await Promise.all([
+  const [findOtp, ,] = await Promise.all([
     context.prisma.otp.findFirst({
       where: {
         otp: encode(otp),
@@ -64,13 +71,20 @@ const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma
         ],
       },
     }),
+    context.prisma.user.deleteMany({
+      where: {
+        expiredAt: {
+          lte: new Date(),
+        },
+      },
+    }),
   ]);
 
   if (findOtp === null) throw new Error("Otp not found");
   try {
     await context.prisma.user.update({
       where: { userId: findOtp.userId },
-      data: { status: "ACTIVE" as unknown as STATUS_USER },
+      data: { status: "ACTIVE" as unknown as STATUS_USER, expiredAt: null },
     });
 
     return { message: "successfully activated the user", status: "OK" as unknown as STATUS };
@@ -78,6 +92,52 @@ const verifyUser = async (otp: string, context: Required<Pick<MyContext, "prisma
     const err = error as Error;
     throw new Error(err.message ?? "Could not activate the user");
   }
+};
+
+const generateOTP = async (usernameOrEmail: string, context: Required<Pick<MyContext, "prisma">>) => {
+  const findUser = await context.prisma.user.findFirst({
+    where: {
+      OR: [
+        { username: usernameOrEmail, status: "PENDING" as unknown as STATUS_USER },
+        { email: usernameOrEmail, status: "PENDING" as unknown as STATUS_USER },
+      ],
+    },
+    // select: {userId: true, email: true, otp: {select: {createdAt: true, updateAt: true}}}
+  });
+
+  if (findUser === null) throw new Error("user not found");
+  return context.prisma.$transaction(async (tx: PrismaClient) => {
+    try {
+      const otp = generateNumber(6);
+      const content = await mailOptions("Verify your email", findUser.email, "OTP", `<h3>${otp}</h3>`);
+      const [, , valid] = await Promise.all([
+        tx.otp.deleteMany({
+          where: {
+            OR: [
+              {
+                expiredAt: {
+                  lte: new Date(),
+                },
+              },
+              {
+                userId: findUser.userId,
+              },
+            ],
+          },
+        }),
+        tx.otp.create({
+          data: { otp: encode(otp), userId: findUser.userId, expiredAt: new Date(addHours(new Date(), 2)) },
+        }),
+        sendEmail(content),
+      ]);
+
+      if (!valid) throw new Error("Send Email failed");
+      return "otp resent successfully";
+    } catch (error: unknown) {
+      const err = error as Error;
+      throw new Error(err.message);
+    }
+  });
 };
 
 const login = async (values: Auth, context: Required<Pick<MyContext, "prisma">>): Promise<string | null> => {
@@ -141,4 +201,4 @@ const FrefreshToken = async (token: string, context: Required<Pick<MyContext, "p
   return await Promise.resolve({ accessToken: data.accessToken, refreshToken: data.refreshToken });
 };
 
-export { register, login, FrefreshToken, verifyUser };
+export { register, login, FrefreshToken, verifyUser, generateOTP };

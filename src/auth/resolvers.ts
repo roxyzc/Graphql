@@ -1,4 +1,4 @@
-import { login, verifyUser, register, FrefreshToken } from "./controllers/auth.controller";
+import { login, verifyUser, register, FrefreshToken, generateOTP } from "./controllers/auth.controller";
 import { type User, type Auth, type MyContext } from "@/types";
 import { hash } from "@/utils/hash.util";
 import { verifyToken } from "@/utils/token.util";
@@ -36,6 +36,21 @@ const resolvers = {
           message: result.message,
         };
       } catch (error: unknown) {
+        const err = error as Error;
+        return {
+          status: "ERROR",
+          message: err.message,
+        };
+      }
+    },
+    takeTheOtpAgain: async (_: unknown, { usernameOrEmail }: { usernameOrEmail: string }, context: MyContext) => {
+      try {
+        const result = await generateOTP(usernameOrEmail, context);
+        return {
+          status: "OK",
+          message: result,
+        };
+      } catch (error) {
         const err = error as Error;
         return {
           status: "ERROR",

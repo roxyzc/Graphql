@@ -25,8 +25,8 @@ describe("it-utils", () => {
 
   it("date", () => {
     const date = new Date();
-    const expired = addHours(new Date(), 2);
-    expect(date.getTime() < expired).toBe(true);
+    const expired = new Date(addHours(new Date(), 2));
+    expect(date < expired).toBe(true);
   });
 
   onExit(() => {
