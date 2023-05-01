@@ -65,6 +65,5 @@ model Otp {
   userId    String    @unique @db.VarChar(100)
   otp       String    @db.VarChar(10)
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
   expiredAt DateTime?
 }

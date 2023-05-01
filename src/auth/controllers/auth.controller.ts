@@ -102,10 +102,12 @@ const generateOTP = async (usernameOrEmail: string, context: Required<Pick<MyCon
         { email: usernameOrEmail, status: "PENDING" as unknown as STATUS_USER },
       ],
     },
-    // select: {userId: true, email: true, otp: {select: {createdAt: true, updateAt: true}}}
+    select: { userId: true, email: true, Otp: { select: { otp: true, createdAt: true } } },
   });
 
   if (findUser === null) throw new Error("user not found");
+  if ((findUser.Otp?.createdAt.getTime() ?? new Date().getTime() - 60001) > new Date().getTime() - 60000)
+    throw new Error("wait 1 minute");
   return context.prisma.$transaction(async (tx: PrismaClient) => {
     try {
       const otp = generateNumber(6);
