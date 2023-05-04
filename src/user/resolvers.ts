@@ -1,6 +1,6 @@
 import { verifyToken } from "@/utils/token.util";
-import { getUser, getUsers } from "./controllers/get.controller";
-import { type MyContext } from "@/types";
+import { getUserById, getUsers } from "./controllers/get.controller";
+import { type Payload, type MyContext } from "@/types";
 
 const resolvers = {
   Query: {
@@ -25,12 +25,31 @@ const resolvers = {
       }
     },
 
-    dataUser: async (_parents: unknown, { id }: { id: string }, context: MyContext) => {
+    dataUser: async (_parents: unknown, _args: unknown, context: MyContext) => {
+      const token = context.token as string;
+      try {
+        const payload: Payload = await verifyToken(token, process.env.ACCESSTOKENSECRET as string);
+        const data = await getUserById(payload.id, context);
+        return {
+          __typename: "User",
+          ...data,
+        };
+      } catch (error: unknown) {
+        const err = error as Error;
+        return {
+          __typename: "Status",
+          status: "ERROR",
+          message: err.message ?? "Unauthorized",
+        };
+      }
+    },
+
+    getUser: async (_parents: unknown, { id }: { id: string }, context: MyContext) => {
       const token = context.token as string;
       try {
         const [, data] = await Promise.all([
           verifyToken(token, process.env.ACCESSTOKENSECRET as string),
-          getUser(id, context),
+          getUserById(id, context),
         ]);
 
         return {

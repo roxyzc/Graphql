@@ -54,7 +54,8 @@ union Result = User | Users | Diary | Diaries | Status | Token
 
 type Query {
   dataUsers: Result
-  dataUser(id: String): Result
+  dataUser: Result
+  getUser(id: String): Result
   getDiariesByUserId: Result
   getDiaries: Result
   getDiary(id: String): Result

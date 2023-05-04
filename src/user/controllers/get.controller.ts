@@ -5,7 +5,7 @@ const getUsers = async (context: Required<Pick<MyContext, "prisma">>) => {
   return data;
 };
 
-const getUser = async (userId: string, context: Required<Pick<MyContext, "prisma">>) => {
+const getUserById = async (userId: string, context: Required<Pick<MyContext, "prisma">>) => {
   const data = await context.prisma.user.findUnique({
     where: { userId },
     select: { userId: true, username: true, email: true, role: true, createdAt: true, updatedAt: true },
@@ -13,4 +13,4 @@ const getUser = async (userId: string, context: Required<Pick<MyContext, "prisma
   return data;
 };
 
-export { getUsers, getUser };
+export { getUsers, getUserById };
