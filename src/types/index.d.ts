@@ -5,6 +5,11 @@ export enum STATUS_USER {
   ACTIVE,
 }
 
+export enum STATUS_DIARY {
+  PUBLIC,
+  PRIVATE,
+}
+
 export enum STATUS {
   ERROR,
   OK,
@@ -26,6 +31,14 @@ export interface Token {
 export interface Auth {
   usernameOrEmail: string;
   password: string;
+}
+
+export interface Diary {
+  diaryId?: string;
+  status_diary: STATUS_DIARY;
+  title: string;
+  content: string;
+  userId?: string;
 }
 
 export interface MyContext {

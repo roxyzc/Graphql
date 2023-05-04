@@ -5,6 +5,11 @@ enum STATUS {
   OK
 }
 
+enum STATUS_DIARY {
+  PUBLIC
+  PRIVATE
+}
+
 enum ROLE {
   USER
   ADMIN
@@ -24,6 +29,17 @@ type Users {
   data: [User]!
 }
 
+type Diary {
+  diaryId: String!
+  status_diary: STATUS_DIARY!
+  title: String!
+  content: String!
+}
+
+type Diaries {
+  data: [Diary]!
+}
+
 type Status {
   status: STATUS!
   message: String!
@@ -34,11 +50,14 @@ type Token {
   refreshToken: String
 }
 
-union Result = User | Status | Users | Token
+union Result = User | Users | Diary | Diaries | Status | Token
 
 type Query {
   dataUsers: Result
   dataUser(id: String): Result
+  getDiariesByUserId: Result
+  getDiaries: Result
+  getDiary(id: String): Result
 }
 
 type Mutation {
@@ -47,4 +66,7 @@ type Mutation {
   login(usernameOrEmail: String!, password: String!): Result
   refreshToken(token: String): Result
   takeTheOtpAgain(usernameOrEmail: String!): Status
+  addDiary(status_diary: STATUS_DIARY!, title: String!, content: String!): Result
+  updateDiary(diaryId: String!, status_diary: STATUS_DIARY!, title: String!, content: String!): Result
+  deleteDiary(diaryId: String!): Result
 }
